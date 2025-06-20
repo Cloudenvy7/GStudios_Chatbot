@@ -1,24 +1,79 @@
-<!-- chat.js  – host on GitHub Pages -->
-<script defer src="chat.js"></script>
-
-<style>#jxBubble{position:fixed;bottom:1rem;right:1rem;z-index:999}</style>
-
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Gemini Chatbot</title>
+  <script defer src="chat.js"></script>
+  <style>
+    #jxBubble {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      z-index: 999;
+    }
+    #jxPanel {
+      position: fixed;
+      bottom: 5rem;
+      right: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      width: 400px;
+      height: 520px;
+      background: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 10px;
+    }
+  </style>
+</head>
 <body>
-    <h1>Hello World</h1>
-    <button id="jxBubble">💬</button>
-    <div id="jxPanel" hidden>
-      <iframe id="jxFrame"
-              style="width:400px;height:520px;border:0;border-radius:8px"
-              srcdoc="<body style='font-family:arial;margin:0'>
-                      <div id=log style='height:88%;overflow:auto'></div>
-                      <form id=f style='display:flex'>
-                        <input id=i style='flex:1;border:0;padding:8px'>
-                      </form>
-                    </body>">
-</div>
+  <h1>Hello World</h1>
+
+  <button id="jxBubble">💬</button>
+  <div id="jxPanel" hidden>
+    <iframe id="jxFrame" srcdoc='
+      <html>
+      <head><style>body { font-family: sans-serif; padding: 10px; }</style></head>
+      <body>
+        <div id="log" style="height: 380px; overflow-y: auto; border: 1px solid #ccc; padding: 8px; border-radius: 8px;"></div>
+        <form id="f" style="margin-top:10px; display: flex;">
+          <input id="i" placeholder="Ask something..." style="flex: 1; padding: 8px; border-radius: 6px;" />
+        </form>
+        <script>
+          const f = document.getElementById("f");
+          const i = document.getElementById("i");
+          const log = document.getElementById("log");
+          f.onsubmit = async (e) => {
+            e.preventDefault();
+            const prompt = i.value;
+            i.value = "";
+            log.innerHTML += "<div><b>You:</b> " + prompt + "</div>";
+
+            const r = await fetch("https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbzBVZA6wW06TlIUEVrpetwljdEwOuQ1Sn-NB0tyrwcvMntvrte7_tmsKiBmCAAWokGk/exec", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ prompt })
+            });
+
+            const data = await r.json();
+            const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || "[No response]";
+            log.innerHTML += "<div><b>Bot:</b> " + reply + "</div>";
+            log.scrollTop = log.scrollHeight;
+          };
+        </script>
+      </body>
+      </html>
+    '></iframe>
+  </div>
+</body>
 
 <script>
-const API = "https://github.com/Cloudenvy7/GStudios_Chatbot/settings/pageshttps://script.google.com/macros/s/AKfycbzBVZA6wW06TlIUEVrpetwljdEwOuQ1Sn-NB0tyrwcvMntvrte7_tmsKiBmCAAWokGk/exec";          // replace with Apps Script URL
-// …pop-open panel, postMessage to iframe, fetch to proxy, stream responses…
+  const bubble = document.getElementById("jxBubble");
+  const panel = document.getElementById("jxPanel");
+  bubble.onclick = () => panel.hidden = !panel.hidden;
 </script>
-</body>
+</html>
