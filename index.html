@@ -3,20 +3,23 @@
 
 <style>#jxBubble{position:fixed;bottom:1rem;right:1rem;z-index:999}</style>
 
-<button id="jxBubble">💬</button>
-<div id="jxPanel" hidden>
-  <iframe id="jxFrame"
-          style="width:400px;height:520px;border:0;border-radius:8px"
-          srcdoc="<body style='font-family:arial;margin:0'>
-                   <div id=log style='height:88%;overflow:auto'></div>
-                   <form id=f style='display:flex'>
-                     <input id=i style='flex:1;border:0;padding:8px'>
-                   </form>
-                  <h1>Hello World</h1>
-                 </body>">
+<body>
+    <h1>Hello World</h1>
+    <button id="jxBubble">💬</button>
+    <div id="jxPanel" hidden>
+      <iframe id="jxFrame"
+              style="width:400px;height:520px;border:0;border-radius:8px"
+              srcdoc="<body style='font-family:arial;margin:0'>
+                      <div id=log style='height:88%;overflow:auto'></div>
+                      <form id=f style='display:flex'>
+                        <input id=i style='flex:1;border:0;padding:8px'>
+                      </form>
+                    </body>">
 </div>
 
+<script defer src="chat.js"></script>
 <script>
 const API = "https://github.com/Cloudenvy7/GStudios_Chatbot/settings/pageshttps://script.google.com/macros/s/AKfycbzBVZA6wW06TlIUEVrpetwljdEwOuQ1Sn-NB0tyrwcvMntvrte7_tmsKiBmCAAWokGk/exec";          // replace with Apps Script URL
 // …pop-open panel, postMessage to iframe, fetch to proxy, stream responses…
 </script>
+</body>
