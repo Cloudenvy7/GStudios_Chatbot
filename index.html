@@ -1,0 +1,21 @@
+<!-- chat.js  – host on GitHub Pages -->
+<script defer src="chat.js"></script>
+
+<style>#jxBubble{position:fixed;bottom:1rem;right:1rem;z-index:999}</style>
+
+<button id="jxBubble">💬</button>
+<div id="jxPanel" hidden>
+  <iframe id="jxFrame"
+          style="width:400px;height:520px;border:0;border-radius:8px"
+          srcdoc="<body style='font-family:arial;margin:0'>
+                   <div id=log style='height:88%;overflow:auto'></div>
+                   <form id=f style='display:flex'>
+                     <input id=i style='flex:1;border:0;padding:8px'>
+                   </form>
+                 </body>">
+</div>
+
+<script>
+const API = "YOUR_SCRIPT_URL";          // replace with Apps Script URL
+// …pop-open panel, postMessage to iframe, fetch to proxy, stream responses…
+</script>
