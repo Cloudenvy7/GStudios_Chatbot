@@ -1,107 +1,111 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Gemini Chatbot</title>
-  <script defer src="chat.js"></script>
   <style>
-    #jxBubble {
-      position: fixed;
-      bottom: 1rem;
-      right: 1rem;
-      z-index: 999;
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      background: #f5f5f5;
     }
-    #jxPanel {
-      position: fixed;
-      bottom: 5rem;
-      right: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      width: 400px;
-      height: 520px;
+    #chatbox {
       background: white;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-    }
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
+      max-width: 600px;
+      margin: auto;
       border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+    #log {
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: #f9f9f9;
+      font-size: 0.95rem;
+    }
+    input[type="text"], input[type="file"], button {
+      font-size: 1rem;
+      padding: 10px;
+      margin-top: 10px;
+      margin-bottom: 5px;
+    }
+    input[type="text"] {
+      width: 70%;
     }
   </style>
 </head>
 <body>
-  <h1>Hello World</h1>
+  <div id="chatbox">
+    <h2>Gemini Chatbot</h2>
 
-  <button id="jxBubble">💬</button>
-  <div id="jxPanel" hidden>
-    <iframe id="jxFrame" srcdoc='
-      <html>
-      <head><style>body { font-family: sans-serif; padding: 10px; }</style></head>
-      <body>
-        <input id="file" type="file" accept="application/pdf" />
-        <div id="log" style="height: 380px; overflow-y: auto; border: 1px solid #ccc; padding: 8px; border-radius: 8px;"></div>
-        <form id="f" style="margin-top:10px; display: flex;">
-          <input id="i" placeholder="Ask something..." style="flex: 1; padding: 8px; border-radius: 6px;" />
-        </form>
-        <script>
-          const f = document.getElementById("f");
-          const i = document.getElementById("i");
-          const fileInput = document.getElementById("file");
-          const log = document.getElementById("log");
+    <input id="file" type="file" accept="application/pdf" />
+    <div id="log"></div>
 
-          let uploadedFileId = null;
-
-          f.onsubmit = async (e) => {
-            e.preventDefault();
-            const prompt = i.value;
-            i.value = "";
-            log.innerHTML += "<div><b>You:</b> " + prompt + "</div>";
-
-            const payload = {
-              prompt,
-              fileId: uploadedFileId // will be null if no file uploaded
-            };
-
-            const r = await fetch("https://script.google.com/macros/s/AKfycbzBVZA6wW06TlIUEVrpetwljdEwOuQ1Sn-NB0tyrwcvMntvrte7_tmsKiBmCAAWokGk/exec", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload)
-            });
-
-            const data = await r.json();
-            const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || "[No response]";
-            log.innerHTML += "<div><b>Bot:</b> " + reply + "</div>";
-            log.scrollTop = log.scrollHeight;
-          };
-
-          fileInput.onchange = async (e) => {
-            const file = fileInput.files[0];
-            if (!file) return;
-
-            const formData = new FormData();
-            formData.append("file", file);
-
-            const r = await fetch("https://script.google.com/macros/s/AKfycbzBVZA6wW06TlIUEVrpetwljdEwOuQ1Sn-NB0tyrwcvMntvrte7_tmsKiBmCAAWokGk/exec", {
-              method: "POST",
-              body: formData
-            });
-
-            const data = await r.json();
-            uploadedFileId = data.fileId;
-
-            log.innerHTML += `<div><i>Uploaded PDF: ${file.name}</i></div>`;
-          };
-          </script>
-      </body>
-      </html>
-    '></iframe>
+    <input type="text" id="prompt" placeholder="Ask something..." />
+    <button onclick="send()">Send</button>
   </div>
-</body>
 
-<script>
-  const bubble = document.getElementById("jxBubble");
-  const panel = document.getElementById("jxPanel");
-  bubble.onclick = () => panel.hidden = !panel.hidden;
-</script>
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzBVZA6wW06TlIUEVrpetwljdEwOuQ1Sn-NB0tyrwcvMntvrte7_tmsKiBmCAAWokGk/exec";
+    const log = document.getElementById("log");
+    let fileId = null;
+
+    document.getElementById("file").onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      log.innerHTML += `<div><i>Uploading "${file.name}"...</i></div>`;
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await res.json();
+        fileId = data.fileId;
+
+        log.innerHTML += `<div><b>File uploaded:</b> ${file.name}</div>`;
+      } catch (err) {
+        log.innerHTML += `<div style="color: red;"><b>Upload failed:</b> ${err.message}</div>`;
+      }
+    };
+
+    async function send() {
+      const input = document.getElementById("prompt");
+      const prompt = input.value.trim();
+      if (!prompt) return;
+
+      input.value = "";
+      log.innerHTML += `<div><b>You:</b> ${prompt}</div>`;
+
+      const payload = {
+        prompt,
+        fileId // may be null
+      };
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || "[No response]";
+
+        log.innerHTML += `<div><b>Bot:</b> ${reply}</div>`;
+        log.scrollTop = log.scrollHeight;
+      } catch (err) {
+        log.innerHTML += `<div style="color: red;"><b>Error:</b> ${err.message}</div>`;
+      }
+    }
+  </script>
+</body>
 </html>
