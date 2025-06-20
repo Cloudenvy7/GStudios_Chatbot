@@ -39,6 +39,7 @@
       <html>
       <head><style>body { font-family: sans-serif; padding: 10px; }</style></head>
       <body>
+        <input id="file" type="file" accept="application/pdf" />
         <div id="log" style="height: 380px; overflow-y: auto; border: 1px solid #ccc; padding: 8px; border-radius: 8px;"></div>
         <form id="f" style="margin-top:10px; display: flex;">
           <input id="i" placeholder="Ask something..." style="flex: 1; padding: 8px; border-radius: 6px;" />
@@ -46,23 +47,50 @@
         <script>
           const f = document.getElementById("f");
           const i = document.getElementById("i");
+          const fileInput = document.getElementById("file");
           const log = document.getElementById("log");
+
+          let uploadedFileId = null;
+
           f.onsubmit = async (e) => {
             e.preventDefault();
             const prompt = i.value;
             i.value = "";
             log.innerHTML += "<div><b>You:</b> " + prompt + "</div>";
 
-            const r = await fetch("https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbzBVZA6wW06TlIUEVrpetwljdEwOuQ1Sn-NB0tyrwcvMntvrte7_tmsKiBmCAAWokGk/exec", {
+            const payload = {
+              prompt,
+              fileId: uploadedFileId // will be null if no file uploaded
+            };
+
+            const r = await fetch("https://script.google.com/macros/s/PASTE_YOUR_DEPLOYMENT_URL_HERE/exec", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ prompt })
+              body: JSON.stringify(payload)
             });
 
             const data = await r.json();
             const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || "[No response]";
             log.innerHTML += "<div><b>Bot:</b> " + reply + "</div>";
             log.scrollTop = log.scrollHeight;
+          };
+
+          fileInput.onchange = async (e) => {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const r = await fetch("https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbzBVZA6wW06TlIUEVrpetwljdEwOuQ1Sn-NB0tyrwcvMntvrte7_tmsKiBmCAAWokGk/exec", {
+              method: "POST",
+              body: formData
+            });
+
+            const data = await r.json();
+            uploadedFileId = data.fileId;
+
+            log.innerHTML += `<div><i>Uploaded PDF: ${file.name}</i></div>`;
           };
         </script>
       </body>
